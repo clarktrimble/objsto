@@ -42,7 +42,7 @@ type Client struct {
 }
 
 // New creates Client from Config.
-func (cfg *Config) New(lgr Logger, client HttpDoer) *Client {
+func (cfg *Config) New(client HttpDoer, lgr Logger) *Client {
 
 	return &Client{
 		region:    cfg.Region,

@@ -47,7 +47,7 @@ var _ = Describe("Client", func() {
 			ErrorFunc: func(ctx context.Context, msg string, err error, kv ...any) {},
 		}
 
-		client = cfg.New(lgr, mock)
+		client = cfg.New(mock, lgr)
 	})
 
 	Describe("Get", func() {
