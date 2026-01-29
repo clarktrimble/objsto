@@ -1,0 +1,12 @@
+
+*secret*
+*.log
+
+mock_test.go
+cover.out
+
+junk/
+bin/
+
+.mcp.json
+.claude
