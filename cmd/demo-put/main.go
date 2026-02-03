@@ -27,7 +27,7 @@ func main() {
 			Host:      "container4:3900",
 			Bucket:    "testbucket",
 			AccessKey: "GKdf62cf3b0b0edb99e0eb138c",
-			SecretKey: "dont wanna check this in, yeah",
+			SecretKey: "dont wanna check this in, yeah", // Todo: demo launch.Redact file secret
 		},
 	}
 

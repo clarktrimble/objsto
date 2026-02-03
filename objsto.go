@@ -11,17 +11,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/clarktrimble/launch"
 	"github.com/pkg/errors"
 )
 
 // Config is Client configurables tagged for use with envconfig.
 type Config struct {
-	Region    string `json:"region" desc:"provider region" required:"true"`
-	Scheme    string `json:"scheme" desc:"http or https" default:"https"`
-	Host      string `json:"host" desc:"endpoint hostname" required:"true"`
-	Bucket    string `json:"bucket" desc:"bucket name" required:"true"`
-	AccessKey string `json:"access_key" desc:"credential identifier" required:"true"`
-	SecretKey Redact `json:"secret_key" desc:"credential secret or path to file" required:"true"`
+	Region    string        `json:"region" desc:"provider region" required:"true"`
+	Scheme    string        `json:"scheme" desc:"http or https" default:"https"`
+	Host      string        `json:"host" desc:"endpoint hostname" required:"true"`
+	Bucket    string        `json:"bucket" desc:"bucket name" required:"true"`
+	AccessKey string        `json:"access_key" desc:"credential identifier" required:"true"`
+	SecretKey launch.Redact `json:"secret_key" desc:"credential secret or path to file" required:"true"`
 }
 
 // HttpDoer performs HTTP requests. *http.Client satisfies this interface.
