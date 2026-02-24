@@ -2,6 +2,8 @@ github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/clarktrimble/launch v0.0.4-0.20251231181723-aa7f63d151b1 h1:B/OzuAKZRTls+3bo3QhNFCycZtF1E8G+NOW4W4fxs/w=
 github.com/clarktrimble/launch v0.0.4-0.20251231181723-aa7f63d151b1/go.mod h1:8zwU/bHBzG+xATZCNrowcoyJ1fa51ptzgCR6cEq7Z+c=
+github.com/clarktrimble/launch v0.0.4 h1:VonBm/8gJMSuS/08enDGn18PtApZvVF/woHapBmuytM=
+github.com/clarktrimble/launch v0.0.4/go.mod h1:8zwU/bHBzG+xATZCNrowcoyJ1fa51ptzgCR6cEq7Z+c=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gkampitakis/ciinfo v0.3.2 h1:JcuOPk8ZU7nZQjdUhctuhQofk7BGHuIy0c9Ez8BNhXs=

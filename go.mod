@@ -3,7 +3,7 @@ module github.com/clarktrimble/objsto
 go 1.25.1
 
 require (
-	github.com/clarktrimble/launch v0.0.4-0.20251231181723-aa7f63d151b1
+	github.com/clarktrimble/launch v0.0.4
 	github.com/onsi/ginkgo/v2 v2.27.5
 	github.com/onsi/gomega v1.39.0
 	github.com/pkg/errors v0.9.1
