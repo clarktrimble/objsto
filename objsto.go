@@ -60,6 +60,8 @@ func (cfg *Config) New(client HttpDoer, lgr Logger) *Client {
 // Get gets an object.
 func (c *Client) Get(ctx context.Context, object string) (reader io.ReadCloser, err error) {
 
+	c.logger.Info(ctx, "getting from S3", "object", object)
+
 	req, err := c.buildRequest(ctx, "GET", object, nil)
 	if err != nil {
 		return
@@ -76,6 +78,8 @@ func (c *Client) Get(ctx context.Context, object string) (reader io.ReadCloser, 
 
 // Put puts an object.
 func (c *Client) Put(ctx context.Context, object string, reader io.ReadSeeker) (err error) {
+
+	c.logger.Info(ctx, "putting to S3", "object", object)
 
 	req, err := c.buildRequest(ctx, "PUT", object, reader)
 	if err != nil {
@@ -159,7 +163,8 @@ func (c *Client) sendRequest(ctx context.Context, req *http.Request) (resp *http
 		return
 	}
 
-	c.logger.Info(ctx, "received response", "status", resp.StatusCode, "elapsed", elapsed)
+	// Todo: rejigger so we can haz request_id in ctx tying this to getting/putting
+	c.logger.Info(ctx, "S3 response", "status", resp.StatusCode, "elapsed", elapsed)
 
 	return
 }
