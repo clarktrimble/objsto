@@ -147,4 +147,68 @@ var _ = Describe("Client", func() {
 			})
 		})
 	})
+
+	Describe("List", func() {
+		var (
+			prefix string
+			keys   []string
+			err    error
+		)
+
+		JustBeforeEach(func() {
+			keys, err = client.List(ctx, prefix)
+		})
+
+		When("request succeeds with objects", func() {
+			BeforeEach(func() {
+				prefix = "export_1_"
+				mock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					xmlBody := `<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+  <Contents><Key>export_1_20260227.json.gz</Key></Contents>
+  <Contents><Key>export_1_20260228.json.gz</Key></Contents>
+</ListBucketResult>`
+					return &http.Response{
+						StatusCode: 200,
+						Body:       io.NopCloser(bytes.NewReader([]byte(xmlBody))),
+					}, nil
+				}
+			})
+
+			It("returns the keys", func() {
+				Expect(err).ToNot(HaveOccurred())
+				Expect(keys).To(Equal([]string{
+					"export_1_20260227.json.gz",
+					"export_1_20260228.json.gz",
+				}))
+			})
+
+			It("sends request with correct query params", func() {
+				calls := mock.DoCalls()
+				Expect(calls).To(HaveLen(1))
+				Expect(calls[0].Request.URL.RawQuery).To(ContainSubstring("list-type=2"))
+				Expect(calls[0].Request.URL.RawQuery).To(ContainSubstring("prefix=export_1_"))
+			})
+		})
+
+		When("request succeeds with no objects", func() {
+			BeforeEach(func() {
+				prefix = "nonexistent_"
+				mock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					xmlBody := `<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+</ListBucketResult>`
+					return &http.Response{
+						StatusCode: 200,
+						Body:       io.NopCloser(bytes.NewReader([]byte(xmlBody))),
+					}, nil
+				}
+			})
+
+			It("returns empty slice", func() {
+				Expect(err).ToNot(HaveOccurred())
+				Expect(keys).To(BeEmpty())
+			})
+		})
+	})
 })

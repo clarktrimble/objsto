@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/clarktrimble/launch"
@@ -95,6 +96,63 @@ func (c *Client) Put(ctx context.Context, object string, reader io.ReadSeeker) (
 	return
 }
 
+// List returns object keys matching the given prefix.
+func (c *Client) List(ctx context.Context, prefix string) (keys []string, err error) {
+
+	c.logger.Info(ctx, "listing from S3", "prefix", prefix)
+
+	path := fmt.Sprintf("/%s", c.bucket)
+	now := time.Now().UTC()
+
+	params := url.Values{}
+	params.Set("list-type", "2")
+	params.Set("prefix", prefix)
+	query := params.Encode()
+
+	uri := fmt.Sprintf("%s://%s%s?%s", c.scheme, c.host, path, query)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
+	if err != nil {
+		err = errors.Wrapf(err, "failed to create list request")
+		return
+	}
+
+	hash, _, err := hashPayload(nil)
+	if err != nil {
+		return
+	}
+
+	headers := signRequest("GET", c.region, c.host, path, c.accessKey, c.secretKey, hash, query, now)
+
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
+
+	c.logger.Debug(ctx, "signed list request",
+		"url", req.URL.String(),
+		"headers", req.Header,
+	)
+
+	resp, err := c.sendRequest(ctx, req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	var result listBucketResult
+	err = xml.NewDecoder(resp.Body).Decode(&result)
+	if err != nil {
+		err = errors.Wrap(err, "failed to parse list response")
+		return
+	}
+
+	for _, obj := range result.Contents {
+		keys = append(keys, obj.Key)
+	}
+
+	return
+}
+
 // unexported
 
 func (c *Client) buildRequest(ctx context.Context, method, object string, pyld io.ReadSeeker) (req *http.Request, err error) {
@@ -131,7 +189,7 @@ func (c *Client) buildRequest(ctx context.Context, method, object string, pyld i
 		return
 	}
 
-	headers := signRequest(method, c.region, c.host, path, c.accessKey, c.secretKey, hash, now)
+	headers := signRequest(method, c.region, c.host, path, c.accessKey, c.secretKey, hash, "", now)
 
 	req.ContentLength = size
 	for k, v := range headers {
@@ -189,6 +247,12 @@ func hashPayload(body io.ReadSeeker) (hash string, size int64, err error) {
 	return
 }
 
+type listBucketResult struct {
+	Contents []struct {
+		Key string `xml:"Key"`
+	} `xml:"Contents"`
+}
+
 type s3Error struct {
 	Code      string `xml:"Code"`
 	Message   string `xml:"Message"`
@@ -215,14 +279,14 @@ const (
 	service = "s3"
 )
 
-func signRequest(method, region, host, path, accessKey, secretKey, payloadHash string, t time.Time) map[string]string {
+func signRequest(method, region, host, path, accessKey, secretKey, payloadHash, query string, t time.Time) map[string]string {
 
 	amzDate := t.Format("20060102T150405Z")
 	dateStamp := t.Format("20060102")
 
 	canonicalHeaders := fmt.Sprintf("host:%s\nx-amz-content-sha256:%s\nx-amz-date:%s\n", host, payloadHash, amzDate)
 	signedHeaders := "host;x-amz-content-sha256;x-amz-date"
-	canonicalRequest := fmt.Sprintf("%s\n%s\n\n%s\n%s\n%s", method, path, canonicalHeaders, signedHeaders, payloadHash)
+	canonicalRequest := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n%s", method, path, query, canonicalHeaders, signedHeaders, payloadHash)
 
 	credentialScope := fmt.Sprintf("%s/%s/%s/aws4_request", dateStamp, region, service)
 	stringToSign := fmt.Sprintf("AWS4-HMAC-SHA256\n%s\n%s\n%s", amzDate, credentialScope, sha256Hash(canonicalRequest))
