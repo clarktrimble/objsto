@@ -130,7 +130,7 @@ func (c *Client) List(ctx context.Context, prefix string) (keys []string, err er
 
 	c.logger.Debug(ctx, "signed list request",
 		"url", req.URL.String(),
-		"headers", req.Header,
+		"headers", redactHeader(req.Header),
 	)
 
 	resp, err := c.sendRequest(ctx, req)
