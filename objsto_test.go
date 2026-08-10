@@ -72,6 +72,25 @@ var _ = Describe("Client", func() {
 			})
 		})
 
+		When("object needs escaping", func() {
+			BeforeEach(func() {
+				object = "test dir/test object?.txt"
+				mock.DoFunc = func(req *http.Request) (*http.Response, error) {
+					return &http.Response{
+						StatusCode: 200,
+						Body:       io.NopCloser(bytes.NewReader(nil)),
+					}, nil
+				}
+			})
+
+			It("sends escaped path and no query", func() {
+				calls := mock.DoCalls()
+				Expect(calls).To(HaveLen(1))
+				Expect(calls[0].Request.URL.EscapedPath()).To(Equal("/test-bucket/test%20dir/test%20object%3F.txt"))
+				Expect(calls[0].Request.URL.RawQuery).To(BeEmpty())
+			})
+		})
+
 		When("request succeeds", func() {
 			BeforeEach(func() {
 				object = "test-object.txt"

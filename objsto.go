@@ -164,7 +164,8 @@ func (c *Client) buildRequest(ctx context.Context, method, object string, pyld i
 
 	// create request
 
-	path := fmt.Sprintf("/%s/%s", c.bucket, object)
+	// escape the path and sign the escaped form; the server canonicalizes from the wire path
+	path := (&url.URL{Path: fmt.Sprintf("/%s/%s", c.bucket, object)}).EscapedPath()
 	uri := fmt.Sprintf("%s://%s%s", c.scheme, c.host, path)
 	now := time.Now().UTC()
 
@@ -199,7 +200,7 @@ func (c *Client) buildRequest(ctx context.Context, method, object string, pyld i
 	c.logger.Debug(ctx, "signed request",
 		"url", req.URL.String(),
 		"host", req.Host,
-		"headers", req.Header,
+		"headers", redactHeader(req.Header),
 	)
 
 	return
@@ -225,6 +226,16 @@ func (c *Client) sendRequest(ctx context.Context, req *http.Request) (resp *http
 	c.logger.Info(ctx, "S3 response", "status", resp.StatusCode, "elapsed", elapsed)
 
 	return
+}
+
+func redactHeader(header http.Header) http.Header {
+
+	redacted := header.Clone()
+	if redacted.Get("Authorization") != "" {
+		redacted.Set("Authorization", "--redacted--")
+	}
+
+	return redacted
 }
 
 func hashPayload(body io.ReadSeeker) (hash string, size int64, err error) {
